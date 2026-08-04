@@ -24,7 +24,7 @@ export default async function VerifyEmailPage({
         <Alert variant={result.success ? "default" : "destructive"}>
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
-        <Button render={<Link href="/login">Go to login</Link>} className="w-full" />
+        <Button nativeButton={false} render={<Link href="/login">Go to login</Link>} className="w-full" />
       </CardContent>
     </Card>
   );

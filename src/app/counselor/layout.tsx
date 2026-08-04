@@ -5,6 +5,7 @@ const LINKS = [
   { href: "/counselor/dashboard", label: "Dashboard" },
   { href: "/counselor/appointments", label: "Appointments" },
   { href: "/counselor/availability", label: "Availability" },
+  { href: "/counselor/messages", label: "Messages" },
 ];
 
 export default async function CounselorLayout({ children }: { children: React.ReactNode }) {

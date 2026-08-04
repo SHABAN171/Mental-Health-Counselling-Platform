@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/patient/appointments", label: "My Appointments" },
   { href: "/patient/assessments", label: "Assessments" },
   { href: "/patient/mood", label: "Mood Tracker" },
+  { href: "/patient/messages", label: "Messages" },
 ];
 
 export default async function PatientLayout({ children }: { children: React.ReactNode }) {

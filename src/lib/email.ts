@@ -1,24 +1,37 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "no-reply@example.com";
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+
+const transporter = SMTP_HOST
+  ? nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_PORT === 465,
+      auth: SMTP_USER && SMTP_PASSWORD ? { user: SMTP_USER, pass: SMTP_PASSWORD } : undefined,
+    })
+  : null;
 
 async function sendMail(to: string, subject: string, body: string) {
-  if (!resend) {
+  if (!transporter) {
     console.log(`\n----- EMAIL (stub) -----\nTo: ${to}\nSubject: ${subject}\n\n${body}\n-------------------------\n`);
     return;
   }
 
-  const { error } = await resend.emails.send({
-    from: EMAIL_FROM,
-    to,
-    subject,
-    text: body,
-  });
-  if (error) {
-    console.error("Failed to send email via Resend:", error);
+  try {
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to,
+      subject,
+      text: body,
+    });
+  } catch (error) {
+    console.error("Failed to send email via SMTP:", error);
   }
 }
 

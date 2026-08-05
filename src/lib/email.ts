@@ -1,7 +1,25 @@
+import { Resend } from "resend";
+
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 async function sendMail(to: string, subject: string, body: string) {
-  console.log(`\n----- EMAIL (stub) -----\nTo: ${to}\nSubject: ${subject}\n\n${body}\n-------------------------\n`);
+  if (!resend) {
+    console.log(`\n----- EMAIL (stub) -----\nTo: ${to}\nSubject: ${subject}\n\n${body}\n-------------------------\n`);
+    return;
+  }
+
+  const { error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject,
+    text: body,
+  });
+  if (error) {
+    console.error("Failed to send email via Resend:", error);
+  }
 }
 
 export async function sendVerificationEmail(email: string, token: string) {

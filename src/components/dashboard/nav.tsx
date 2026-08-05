@@ -14,7 +14,7 @@ export function DashboardNav({
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b bg-background px-6 py-3">
       <div className="flex flex-wrap items-center gap-6">
-        <Link href="/" className="font-semibold">
+        <Link href="/" className="font-semibold text-primary">
           MHCP
         </Link>
         <span className="text-sm text-muted-foreground">{title}</span>

@@ -8,10 +8,10 @@ export default async function Home() {
   if (session?.user) redirect(roleHome(session.user.role));
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 bg-muted/40 p-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 bg-gradient-to-b from-accent/60 to-background p-6 text-center">
       <div className="flex flex-col items-center gap-4">
-        <span className="text-lg font-semibold">MHCP</span>
-        <h1 className="max-w-lg text-3xl font-semibold tracking-tight">
+        <span className="text-lg font-semibold text-primary">MHCP</span>
+        <h1 className="max-w-lg text-4xl font-semibold tracking-tight text-balance">
           Mental health support, made accessible
         </h1>
         <p className="max-w-md text-muted-foreground">

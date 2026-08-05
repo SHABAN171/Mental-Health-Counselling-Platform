@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { sessionNoteSchema } from "@/lib/validations/session-notes";
+import { createNotification } from "@/lib/notifications";
 import type { FormState } from "@/actions/auth";
 
 export async function saveSessionNote(_state: FormState, formData: FormData): Promise<FormState> {
@@ -37,6 +38,13 @@ export async function saveSessionNote(_state: FormState, formData: FormData): Pr
       prescription: prescription || null,
     },
   });
+
+  if (recommendation || prescription) {
+    await createNotification(
+      appointment.patientId,
+      `${user.name} shared a recommendation from your appointment on ${appointment.date.toLocaleDateString()}.`
+    );
+  }
 
   redirect("/counselor/appointments?noteSaved=1");
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { cancelAppointmentAsPatient } from "@/actions/appointments";
@@ -24,7 +25,7 @@ export default async function PatientAppointmentsPage({
 
   const appointments = await prisma.appointment.findMany({
     where: { patientId: user.id },
-    include: { counselor: true },
+    include: { counselor: true, sessionNote: true },
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
   });
 
@@ -80,13 +81,23 @@ export default async function PatientAppointmentsPage({
                       )}
                     </TableCell>
                     <TableCell>
-                      {(appt.status === "PENDING" || appt.status === "CONFIRMED") && (
-                        <form action={cancelAppointmentAsPatient.bind(null, appt.id)}>
-                          <Button type="submit" size="sm" variant="ghost">
-                            Cancel
-                          </Button>
-                        </form>
-                      )}
+                      <div className="flex gap-2">
+                        {(appt.status === "PENDING" || appt.status === "CONFIRMED") && (
+                          <form action={cancelAppointmentAsPatient.bind(null, appt.id)}>
+                            <Button type="submit" size="sm" variant="ghost">
+                              Cancel
+                            </Button>
+                          </form>
+                        )}
+                        {(appt.sessionNote?.recommendation || appt.sessionNote?.prescription) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            nativeButton={false}
+                            render={<Link href={`/patient/appointments/${appt.id}/notes`}>View notes</Link>}
+                          />
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default async function BookAppointmentPage() {
   const counselors = await prisma.user.findMany({
-    where: { role: "COUNSELOR", counselorProfile: { approved: true } },
+    where: { role: "COUNSELOR", counselorProfile: { status: "APPROVED" } },
     include: { counselorProfile: true },
   });
 

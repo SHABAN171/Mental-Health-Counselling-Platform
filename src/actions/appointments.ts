@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { bookAppointmentSchema } from "@/lib/validations/appointments";
+import { createNotification } from "@/lib/notifications";
 import type { FormState } from "@/actions/auth";
 
 export async function bookAppointment(_state: FormState, formData: FormData): Promise<FormState> {
@@ -22,7 +23,7 @@ export async function bookAppointment(_state: FormState, formData: FormData): Pr
     include: { counselorProfile: true },
   });
 
-  if (!counselorUser || counselorUser.role !== "COUNSELOR" || !counselorUser.counselorProfile?.approved) {
+  if (!counselorUser || counselorUser.role !== "COUNSELOR" || counselorUser.counselorProfile?.status !== "APPROVED") {
     return { message: "This counselor is not available for booking." };
   }
 
@@ -56,8 +57,19 @@ export async function bookAppointment(_state: FormState, formData: FormData): Pr
     },
   });
 
+  await createNotification(
+    counselorUser.id,
+    `${user.name} requested an appointment on ${new Date(date).toLocaleDateString()} at ${startTime}.`
+  );
+
   redirect("/patient/appointments?booked=1");
 }
+
+const STATUS_LABEL: Record<"CONFIRMED" | "CANCELLED" | "COMPLETED", string> = {
+  CONFIRMED: "confirmed",
+  CANCELLED: "cancelled",
+  COMPLETED: "marked as completed",
+};
 
 export async function updateAppointmentStatus(
   appointmentId: string,
@@ -65,12 +77,20 @@ export async function updateAppointmentStatus(
 ) {
   const user = await requireRole("COUNSELOR");
 
-  await prisma.appointment.updateMany({
+  const appointment = await prisma.appointment.findFirst({
     where: { id: appointmentId, counselorId: user.id },
-    data: { status },
   });
+  if (!appointment) return;
+
+  await prisma.appointment.update({ where: { id: appointmentId }, data: { status } });
+
+  await createNotification(
+    appointment.patientId,
+    `Your appointment on ${appointment.date.toLocaleDateString()} was ${STATUS_LABEL[status]}.`
+  );
 
   revalidatePath("/counselor/appointments");
+  revalidatePath("/patient/appointments");
 }
 
 export async function setMeetingLink(_state: FormState, formData: FormData): Promise<FormState> {
@@ -95,14 +115,18 @@ export async function setMeetingLink(_state: FormState, formData: FormData): Pro
 export async function cancelAppointmentAsPatient(appointmentId: string) {
   const user = await requireRole("PATIENT");
 
-  await prisma.appointment.updateMany({
-    where: {
-      id: appointmentId,
-      patientId: user.id,
-      status: { in: ["PENDING", "CONFIRMED"] },
-    },
-    data: { status: "CANCELLED" },
+  const appointment = await prisma.appointment.findFirst({
+    where: { id: appointmentId, patientId: user.id, status: { in: ["PENDING", "CONFIRMED"] } },
   });
+  if (!appointment) return;
+
+  await prisma.appointment.update({ where: { id: appointmentId }, data: { status: "CANCELLED" } });
+
+  await createNotification(
+    appointment.counselorId,
+    `${user.name} cancelled their appointment on ${appointment.date.toLocaleDateString()}.`
+  );
 
   revalidatePath("/patient/appointments");
+  revalidatePath("/counselor/appointments");
 }

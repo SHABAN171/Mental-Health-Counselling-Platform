@@ -14,8 +14,9 @@ export default async function AdminCounselorsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const pending = counselors.filter((c) => !c.approved);
-  const approved = counselors.filter((c) => c.approved);
+  const pending = counselors.filter((c) => c.status === "PENDING");
+  const approved = counselors.filter((c) => c.status === "APPROVED");
+  const revoked = counselors.filter((c) => c.status === "REVOKED");
 
   return (
     <div className="flex flex-col gap-6">
@@ -109,6 +110,46 @@ export default async function AdminCounselorsPage() {
           )}
         </CardContent>
       </Card>
+
+      {revoked.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Revoked</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Specialization</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {revoked.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>{c.user.fullName}</TableCell>
+                    <TableCell>{c.user.email}</TableCell>
+                    <TableCell>{c.specialization}</TableCell>
+                    <TableCell>
+                      <Badge variant="destructive">Revoked</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <form action={approveCounselor.bind(null, c.id)}>
+                        <Button type="submit" size="sm" variant="outline">
+                          Re-approve
+                        </Button>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

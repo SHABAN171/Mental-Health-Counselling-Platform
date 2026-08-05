@@ -37,8 +37,12 @@ export default async function CounselorDashboardPage() {
           <CardHeader>
             <CardDescription>Account status</CardDescription>
             <CardTitle className="text-2xl">
-              <Badge variant={profile?.approved ? "default" : "secondary"}>
-                {profile?.approved ? "Approved" : "Pending approval"}
+              <Badge variant={profile?.status === "APPROVED" ? "default" : "secondary"}>
+                {profile?.status === "APPROVED"
+                  ? "Approved"
+                  : profile?.status === "REVOKED"
+                    ? "Revoked"
+                    : "Pending approval"}
               </Badge>
             </CardTitle>
           </CardHeader>

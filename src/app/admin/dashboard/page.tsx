@@ -8,8 +8,8 @@ export default async function AdminDashboardPage() {
 
   const [patientCount, approvedCounselorCount, pendingCounselorCount, appointmentCount] = await Promise.all([
     prisma.user.count({ where: { role: "PATIENT" } }),
-    prisma.counselorProfile.count({ where: { approved: true } }),
-    prisma.counselorProfile.count({ where: { approved: false } }),
+    prisma.counselorProfile.count({ where: { status: "APPROVED" } }),
+    prisma.counselorProfile.count({ where: { status: "PENDING" } }),
     prisma.appointment.count(),
   ]);
 

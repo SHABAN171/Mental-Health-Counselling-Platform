@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { updateAppointmentStatus } from "@/actions/appointments";
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MeetingLinkForm } from "./meeting-link-form";
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -14,7 +16,12 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
   COMPLETED: "outline",
 };
 
-export default async function CounselorAppointmentsPage() {
+export default async function CounselorAppointmentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ noteSaved?: string }>;
+}) {
+  const { noteSaved } = await searchParams;
   const user = await requireRole("COUNSELOR");
 
   const appointments = await prisma.appointment.findMany({
@@ -24,11 +31,17 @@ export default async function CounselorAppointmentsPage() {
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Appointments</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="flex flex-col gap-4">
+      {noteSaved && (
+        <Alert>
+          <AlertDescription>Session note saved.</AlertDescription>
+        </Alert>
+      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Appointments</CardTitle>
+        </CardHeader>
+        <CardContent>
         {appointments.length === 0 ? (
           <p className="text-sm text-muted-foreground">No appointments yet.</p>
         ) : (
@@ -91,6 +104,14 @@ export default async function CounselorAppointmentsPage() {
                           </form>
                         </>
                       )}
+                      {(appt.status === "CONFIRMED" || appt.status === "COMPLETED") && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          nativeButton={false}
+                          render={<Link href={`/counselor/appointments/${appt.id}/notes`}>Notes</Link>}
+                        />
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -98,7 +119,8 @@ export default async function CounselorAppointmentsPage() {
             </TableBody>
           </Table>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

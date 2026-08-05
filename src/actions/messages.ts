@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/rbac";
 import { threadIdFor } from "@/lib/messages";
 import { sendMessageSchema } from "@/lib/validations/messages";
+import { createNotification } from "@/lib/notifications";
 import type { FormState } from "@/actions/auth";
 
 const SAFE_BACK_TO = /^\/(patient|counselor)\/messages\/[a-zA-Z0-9_-]+$/;
@@ -40,6 +41,8 @@ export async function sendMessage(_state: FormState, formData: FormData): Promis
       content,
     },
   });
+
+  await createNotification(receiverId, `New message from ${user.name}.`);
 
   redirect(safeBackTo);
 }

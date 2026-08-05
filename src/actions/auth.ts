@@ -55,7 +55,6 @@ export async function register(_state: FormState, formData: FormData): Promise<F
                 specialization: specialization!,
                 licenseNumber: licenseNumber!,
                 experienceYears: experienceYears ?? 0,
-                approved: false,
               },
             },
           }
@@ -97,7 +96,7 @@ export async function login(_state: FormState, formData: FormData): Promise<Form
     return { message: "Please verify your email before logging in. Check your inbox for the verification link." };
   }
 
-  if (user.role === "COUNSELOR" && !user.counselorProfile?.approved) {
+  if (user.role === "COUNSELOR" && user.counselorProfile?.status !== "APPROVED") {
     return { message: "Your counselor account is pending admin approval." };
   }
 

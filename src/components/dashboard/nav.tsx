@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function DashboardNav({
   title,
@@ -8,7 +9,7 @@ export function DashboardNav({
   userName,
 }: {
   title: string;
-  links: { href: string; label: string }[];
+  links: { href: string; label: string; badge?: number }[];
   userName: string;
 }) {
   return (
@@ -18,10 +19,11 @@ export function DashboardNav({
           MHCP
         </Link>
         <span className="text-sm text-muted-foreground">{title}</span>
-        <nav className="flex gap-4">
+        <nav className="flex items-center gap-4">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm hover:underline">
+            <Link key={link.href} href={link.href} className="flex items-center gap-1.5 text-sm hover:underline">
               {link.label}
+              {!!link.badge && <Badge className="h-4 min-w-4 px-1">{link.badge}</Badge>}
             </Link>
           ))}
         </nav>

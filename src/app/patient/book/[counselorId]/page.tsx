@@ -15,7 +15,7 @@ export default async function BookCounselorPage({
     include: { counselorProfile: { include: { availabilities: true } } },
   });
 
-  if (!counselor || !counselor.counselorProfile?.approved) {
+  if (!counselor || counselor.counselorProfile?.status !== "APPROVED") {
     notFound();
   }
 

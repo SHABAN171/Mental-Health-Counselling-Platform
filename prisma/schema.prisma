@@ -64,6 +64,12 @@ enum NotificationStatus {
   READ
 }
 
+enum CounselorApprovalStatus {
+  PENDING
+  APPROVED
+  REVOKED
+}
+
 model User {
   id            String    @id @default(cuid())
   fullName      String
@@ -104,13 +110,13 @@ model CounselorProfile {
   experienceYears Int      @default(0)
   licenseNumber   String   @unique
   bio             String?
-  approved        Boolean  @default(false)
+  status          CounselorApprovalStatus @default(PENDING)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   availabilities Availability[]
 
-  @@index([approved])
+  @@index([status])
 }
 
 model Availability {

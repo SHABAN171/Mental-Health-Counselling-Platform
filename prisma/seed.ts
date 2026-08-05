@@ -37,7 +37,7 @@ async function main() {
           experienceYears: 8,
           licenseNumber: "LIC-0001",
           bio: "Specializes in cognitive behavioral therapy for anxiety and mood disorders.",
-          approved: true,
+          status: "APPROVED",
           availabilities: {
             create: [
               { dayOfWeek: "MONDAY", startTime: "09:00", endTime: "12:00" },

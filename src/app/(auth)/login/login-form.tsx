@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { login } from "@/actions/auth";
+import { login, resendVerificationEmail } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
+  const [resendState, resendAction, resendPending] = useActionState(resendVerificationEmail, undefined);
 
   return (
     <Card>
@@ -18,13 +19,26 @@ export function LoginForm() {
         <CardTitle>Log in</CardTitle>
         <CardDescription>Access your patient, counselor, or admin dashboard.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
+        {state?.message && (
+          <Alert variant="destructive">
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        )}
+        {state?.unverifiedEmail && !resendState?.message && (
+          <form action={resendAction}>
+            <input type="hidden" name="email" value={state.unverifiedEmail} />
+            <Button type="submit" variant="outline" size="sm" disabled={resendPending}>
+              {resendPending ? "Sending..." : "Resend verification email"}
+            </Button>
+          </form>
+        )}
+        {resendState?.message && (
+          <Alert>
+            <AlertDescription>{resendState.message}</AlertDescription>
+          </Alert>
+        )}
         <form action={action} className="flex flex-col gap-4">
-          {state?.message && (
-            <Alert variant="destructive">
-              <AlertDescription>{state.message}</AlertDescription>
-            </Alert>
-          )}
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="you@example.com" required />

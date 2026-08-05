@@ -18,6 +18,7 @@ export type FormState =
   | {
       errors?: Record<string, string[]>;
       message?: string;
+      unverifiedEmail?: string;
     }
   | undefined;
 
@@ -93,7 +94,10 @@ export async function login(_state: FormState, formData: FormData): Promise<Form
   }
 
   if (!user.emailVerified) {
-    return { message: "Please verify your email before logging in. Check your inbox for the verification link." };
+    return {
+      message: "Please verify your email before logging in. Check your inbox for the verification link.",
+      unverifiedEmail: user.email,
+    };
   }
 
   if (user.role === "COUNSELOR" && user.counselorProfile?.status !== "APPROVED") {
@@ -165,4 +169,23 @@ export async function verifyEmail(token: string): Promise<{ success: boolean; me
   ]);
 
   return { success: true, message: "Your email has been verified. You can now log in." };
+}
+
+export async function resendVerificationEmail(_state: FormState, formData: FormData): Promise<FormState> {
+  const validated = forgotPasswordSchema.safeParse(Object.fromEntries(formData));
+  if (!validated.success) {
+    return { message: "Please enter a valid email." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: validated.data.email } });
+  if (user && !user.emailVerified) {
+    await prisma.verificationToken.deleteMany({ where: { userId: user.id } });
+    const token = crypto.randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: { userId: user.id, token, expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS) },
+    });
+    await sendVerificationEmail(user.email, token);
+  }
+
+  return { message: "If that account needs verifying, a new link has been sent to its inbox." };
 }
